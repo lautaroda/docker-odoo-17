@@ -1,32 +1,20 @@
-#!/usr/bin/env python3
-import argparse
-import psycopg2
-import sys
 import time
+import psycopg2
+from psycopg2 import OperationalError
 
-
-if __name__ == '__main__':
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--db_host', required=True)
-    arg_parser.add_argument('--db_port', required=True)
-    arg_parser.add_argument('--db_user', required=True)
-    arg_parser.add_argument('--db_password', required=True)
-    arg_parser.add_argument('--timeout', type=int, default=5)
-
-    args = arg_parser.parse_args()
-
-    start_time = time.time()
-    while (time.time() - start_time) < args.timeout:
+def wait_for_psql():
+    while True:
         try:
-            conn = psycopg2.connect(user=args.db_user, host=args.db_host, port=args.db_port, password=args.db_password, dbname='postgres')
-            error = ''
-            break
-        except psycopg2.OperationalError as e:
-            error = e
-        else:
+            conn = psycopg2.connect(
+                dbname="postgres",
+                user="odoo",
+                password="odoo",
+                host="db"
+            )
             conn.close()
-        time.sleep(1)
+            break
+        except OperationalError:
+            print("PostgreSQL no está listo, esperando...")
+            time.sleep(2)
 
-    if error:
-        print("Database connection failure: %s" % error, file=sys.stderr)
-        sys.exit(1)
+wait_for_psql()

@@ -1,0 +1,30 @@
+version: '3.1'
+
+services:
+  web:
+    build: .
+    container_name: odoo-web
+    ports:
+      - "${ODOO_PORT}:8069"
+    depends_on:
+      - db
+    environment:
+      - HOST=db
+      - USER=${POSTGRES_USER}
+      - PASSWORD=${POSTGRES_PASSWORD}
+      - ADMIN_PASSWD=${ODOO_ADMIN_PASSWORD}
+    volumes:
+      - ./odoo.conf:/etc/odoo/odoo.conf
+
+  db:
+    image: postgres:13
+    container_name: odoo-db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+
+volumes:
+  odoo-db-data:
